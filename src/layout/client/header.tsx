@@ -9,11 +9,11 @@ const Header = () => {
                 </Link>
                 <nav className="flex space-x-8">
                     <Link to="/" className="text-gray-700 hover:text-primary-600 transition-all duration-300 font-medium relative group">
-                        Home
+                        <div className="p-2">Home</div>
                         <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-600 to-secondary-600 transition-all duration-300 group-hover:w-full"></span>
                     </Link>
                     <Link to="/page1" className="text-gray-700 hover:text-primary-600 transition-all duration-300 font-medium relative group">
-                        Restaurants
+                        <div className="p-2">Restaurants</div>
                         <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-600 to-secondary-600 transition-all duration-300 group-hover:w-full"></span>
                     </Link>
                     <Link to="/admin" className="btn-primary text-sm">

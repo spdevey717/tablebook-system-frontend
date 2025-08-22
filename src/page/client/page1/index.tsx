@@ -5,70 +5,70 @@ const Page1 = () => {
   const restaurants = [
     {
       id: 1,
-      name: "Pizza Palace",
-      cuisine: "Italian",
-      rating: 4.5,
-      priceRange: "$$",
+      name: "Three HorseShoes",
+      cuisine: "United Kingdom",
+      rating: 5.0,
+      priceRange: "",
       icon: PizzaIcon,
-      description: "Authentic Italian pizza and pasta dishes",
-      location: "Downtown",
-      waitTime: "15-20 min"
-    },
-    {
-      id: 2,
-      name: "Sushi Bar",
-      cuisine: "Japanese",
-      rating: 4.8,
-      priceRange: "$$$",
-      icon: SushiIcon,
-      description: "Fresh sushi and traditional Japanese cuisine",
-      location: "Riverside",
-      waitTime: "10-15 min"
-    },
-    {
-      id: 3,
-      name: "Steak House",
-      cuisine: "American",
-      rating: 4.3,
-      priceRange: "$$$",
-      icon: SteakIcon,
-      description: "Premium steaks and grilled specialties",
-      location: "Uptown",
-      waitTime: "20-25 min"
-    },
-    {
-      id: 4,
-      name: "Italian Kitchen",
-      cuisine: "Italian",
-      rating: 4.6,
-      priceRange: "$$",
-      icon: PastaIcon,
-      description: "Classic Italian dishes in a cozy atmosphere",
-      location: "Midtown",
-      waitTime: "12-18 min"
-    },
-    {
-      id: 5,
-      name: "Thai Spice",
-      cuisine: "Thai",
-      rating: 4.4,
-      priceRange: "$$",
-      icon: NoodlesIcon,
-      description: "Authentic Thai flavors and spices",
-      location: "Chinatown",
-      waitTime: "8-12 min"
-    },
-    {
-      id: 6,
-      name: "Burger Joint",
-      cuisine: "American",
-      rating: 4.2,
-      priceRange: "$",
-      icon: BurgerIcon,
-      description: "Gourmet burgers and comfort food",
-      location: "Westside",
-      waitTime: "5-10 min"
+      description: "",
+      // location: "Downtown",
+      // waitTime: "15-20 min"
     }
+    // {
+    //   id: 2,
+    //   name: "Sushi Bar",
+    //   cuisine: "Japanese",
+    //   rating: 4.8,
+    //   priceRange: "$$$",
+    //   icon: SushiIcon,
+    //   description: "Fresh sushi and traditional Japanese cuisine",
+    //   location: "Riverside",
+    //   waitTime: "10-15 min"
+    // },
+    // {
+    //   id: 3,
+    //   name: "Steak House",
+    //   cuisine: "American",
+    //   rating: 4.3,
+    //   priceRange: "$$$",
+    //   icon: SteakIcon,
+    //   description: "Premium steaks and grilled specialties",
+    //   location: "Uptown",
+    //   waitTime: "20-25 min"
+    // },
+    // {
+    //   id: 4,
+    //   name: "Italian Kitchen",
+    //   cuisine: "Italian",
+    //   rating: 4.6,
+    //   priceRange: "$$",
+    //   icon: PastaIcon,
+    //   description: "Classic Italian dishes in a cozy atmosphere",
+    //   location: "Midtown",
+    //   waitTime: "12-18 min"
+    // },
+    // {
+    //   id: 5,
+    //   name: "Thai Spice",
+    //   cuisine: "Thai",
+    //   rating: 4.4,
+    //   priceRange: "$$",
+    //   icon: NoodlesIcon,
+    //   description: "Authentic Thai flavors and spices",
+    //   location: "Chinatown",
+    //   waitTime: "8-12 min"
+    // },
+    // {
+    //   id: 6,
+    //   name: "Burger Joint",
+    //   cuisine: "American",
+    //   rating: 4.2,
+    //   priceRange: "$",
+    //   icon: BurgerIcon,
+    //   description: "Gourmet burgers and comfort food",
+    //   location: "Westside",
+    //   waitTime: "5-10 min"
+    // }
   ];
 
   return (
@@ -112,7 +112,7 @@ const Page1 = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-slide-up max-w-7xl mx-auto">
           {restaurants.map((restaurant, index) => (
             <div key={restaurant.id} className="card card-hover group" style={{animationDelay: `${index * 0.1}s`}}>
-              <div className="p-8">
+              <div className="p-4">
                 <div className="flex items-center justify-between mb-6">
                   <div className="group-hover:scale-110 transition-transform duration-300">
                     <restaurant.icon size={64} className="text-primary-600" />
@@ -130,30 +130,18 @@ const Page1 = () => {
                 <p className="text-primary-600 font-semibold mb-2">{restaurant.cuisine}</p>
                 <p className="text-gray-600 mb-4 leading-relaxed">{restaurant.description}</p>
                 
-                <div className="flex items-center justify-between mb-6 text-sm text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <LocationIcon size={16} />
-                    {restaurant.location}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <ClockIcon size={16} />
-                    {restaurant.waitTime}
-                  </span>
-                </div>
                 
                 <div className="flex gap-3">
                   <LinkButton 
-                    href={`/restaurant/${restaurant.id}`}
+                    href={`#`}
                     className="flex-1 btn-primary text-center py-3 flex items-center justify-center gap-2"
                   >
-                    <ViewIcon size={16} />
                     View Details
                   </LinkButton>
                   <LinkButton 
-                    href={`/book/${restaurant.id}`}
+                    href={`#`}
                     className="flex-1 btn-accent text-center py-3 flex items-center justify-center gap-2"
                   >
-                    <BookIcon size={16} />
                     Book Table
                   </LinkButton>
                 </div>

@@ -10,7 +10,7 @@ const Footer = () => {
                     <div>
                         <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
                         <ul className="space-y-2 text-gray-300">
-                            <li className="hover:text-primary-400 transition-colors cursor-pointer">Find Restaurants</li>
+                            {/* <li className="hover:text-primary-400 transition-colors cursor-pointer">Find Restaurants</li> */}
                             <li className="hover:text-primary-400 transition-colors cursor-pointer">How It Works</li>
                             <li className="hover:text-primary-400 transition-colors cursor-pointer">About Us</li>
                             <li className="hover:text-primary-400 transition-colors cursor-pointer">Contact</li>
@@ -30,9 +30,9 @@ const Footer = () => {
                     <div className="text-gray-400 mb-4 md:mb-0">
                         © 2024 TableBook.Me. All rights reserved.
                     </div>
-                    <div className="text-gray-400">
+                    {/* <div className="text-gray-400">
                         Made with ❤️ for food lovers
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </footer>

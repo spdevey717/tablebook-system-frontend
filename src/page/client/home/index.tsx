@@ -71,7 +71,7 @@ const HomePage = () => {
               <div className="text-gray-600">Bookings Made</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-gradient mb-2">4.9⭐</div>
+              <div className="text-4xl font-bold text-gradient mb-2">5.0</div>
               <div className="text-gray-600">Average Rating</div>
             </div>
           </div>
