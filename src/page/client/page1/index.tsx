@@ -1,5 +1,5 @@
 import LinkButton from "../../../components/LinkButton";
-import { SearchIcon, LocationIcon, ClockIcon, StarIcon, PizzaIcon, SushiIcon, SteakIcon, PastaIcon, NoodlesIcon, BurgerIcon, ViewIcon, BookIcon } from "../../../components/Icons";
+import { SearchIcon, StarIcon, PizzaIcon } from "../../../components/Icons";
 
 const Page1 = () => {
   const restaurants = [
