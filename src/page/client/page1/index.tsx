@@ -73,12 +73,12 @@ const Page1 = () => {
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-[1200px] m-auto px-6 py-12">
+      <div className="max-w-[1920px] m-auto px-6 py-12">
         <div className="mb-12 animate-fade-in">
           <h1 className="text-5xl font-bold text-gradient mb-6">Find Your Perfect Restaurant</h1>
           <p className="text-xl text-gray-600 mb-8">Discover amazing dining experiences in your area</p>
           
-          <div className="card p-6 mb-8">
+          <div className="card p-6 mb-8 max-w-4xl mx-auto">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1 relative">
                 <input
@@ -109,7 +109,7 @@ const Page1 = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-slide-up">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-slide-up max-w-7xl mx-auto">
           {restaurants.map((restaurant, index) => (
             <div key={restaurant.id} className="card card-hover group" style={{animationDelay: `${index * 0.1}s`}}>
               <div className="p-8">

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 const Header = () => {
     return (
         <header className="w-full glass sticky top-0 z-50">
-            <div className="max-w-[1200px] h-20 m-auto flex justify-between items-center px-6">
+            <div className="max-w-[1920px] h-20 m-auto flex justify-between items-center px-6">
                 <Link to="/" className="text-3xl font-bold text-gradient">
                     TableBook.Me
                 </Link>
