@@ -2,8 +2,8 @@ const DashboardPage = () => {
   const stats = [
     { label: "Total Users", value: "1,234", change: "+12%", icon: "👥", color: "primary" },
     { label: "Active Bookings", value: "89", change: "+5%", icon: "📅", color: "secondary" },
-    { label: "Revenue", value: "$12,345", change: "+8%", icon: "💰", color: "accent" },
     { label: "Restaurants", value: "45", change: "+3%", icon: "🍽️", color: "primary" },
+    { label: "Calls Today", value: "23", change: "+15%", icon: "📞", color: "accent" },
   ];
 
   const getColorClasses = (color: string) => {
@@ -73,16 +73,16 @@ const DashboardPage = () => {
           </h3>
           <div className="space-y-4">
             <button className="w-full btn-primary text-left flex items-center">
-              <span className="mr-3">➕</span>
-              Add New Restaurant
+              <span className="mr-3">🍽️</span>
+              Manage Restaurants
             </button>
             <button className="w-full btn-secondary text-left flex items-center">
-              <span className="mr-3">📋</span>
-              View All Bookings
+              <span className="mr-3">📞</span>
+              Call Queue Status
             </button>
             <button className="w-full btn-accent text-left flex items-center">
-              <span className="mr-3">👥</span>
-              Manage Users
+              <span className="mr-3">📋</span>
+              View All Bookings
             </button>
           </div>
         </div>

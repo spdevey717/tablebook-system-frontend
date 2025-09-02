@@ -5,6 +5,7 @@ const AdminSidebar = () => {
 
   const navItems = [
     { path: "/admin", label: "Dashboard", icon: "📊" },
+    { path: "/admin/restaurants", label: "Restaurants", icon: "🍽️" },
     { path: "/admin/users", label: "Users", icon: "👥" },
     { path: "/admin/bookings", label: "Bookings", icon: "📅" },
     { path: "/admin/settings", label: "Settings", icon: "⚙️" },

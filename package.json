@@ -12,12 +12,21 @@
   "dependencies": {
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.8.0"
+    "react-router-dom": "^7.8.0",
+    "@google-cloud/local-auth": "^2.1.0",
+    "googleapis": "^128.0.0",
+    "libphonenumber-js": "^1.10.55",
+    "papaparse": "^5.4.1",
+    "react-dropzone": "^14.2.3",
+    "react-hot-toast": "^2.4.1",
+    "date-fns": "^2.30.0",
+    "lucide-react": "^0.400.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
+    "@types/papaparse": "^5.3.14",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.33.0",
