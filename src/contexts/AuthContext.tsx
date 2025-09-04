@@ -1,12 +1,19 @@
+// Import Main Libraries
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+
+// Import Other Libraries
+import { jwtDecode } from "jwt-decode";
+import { GoogleLogin, googleLogout, type CredentialResponse } from "@react-oauth/google";
+
 import { type User, UserRole } from '../types';
+import { verifyGoogleToken } from '../services/auth';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: (credentialResponse: CredentialResponse) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -67,25 +74,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (credentialResponse: CredentialResponse) => {
     setLoading(true);
     try {
-      // Simulate Google OAuth flow
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const idToken = credentialResponse.credential;
+      console.log("[DEBUG] ID Token:", idToken);
+      const response = await verifyGoogleToken(idToken!);
+      console.log("[DEBUG] Response:", response);
+      // const payload = jwtDecode(idToken!);
       
+      // console.log("[DEBUG] Payload:", payload);
       // Mock Google user data
-      const mockUser: User = {
-        id: 1,
-        email: 'demo@tablebook.me',
-        name: 'Google Demo User',
-        role: UserRole.ADMIN,
-        restaurant_ids: [1, 2],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
+      // const mockUser: User = {
+      //   id: 1,
+      //   email: payload.email!,
+      //   name: payload.given_name!,
+      //   role: UserRole.ADMIN,
+      //   restaurant_ids: [1, 2],
+      //   created_at: new Date().toISOString(),
+      //   updated_at: new Date().toISOString()
+      // };
       
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      // setUser(mockUser);
+      // localStorage.setItem('user', JSON.stringify(mockUser));
     } catch (error) {
       console.error('Google login failed:', error);
       throw error;
