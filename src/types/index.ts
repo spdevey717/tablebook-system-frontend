@@ -85,7 +85,7 @@ export interface User {
 
 export enum UserRole {
   ADMIN = 'admin',
-  STANDARD = 'standard'
+  USER = 'user'
 }
 
 export interface CSVUploadData {

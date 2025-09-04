@@ -2,11 +2,11 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
 // Import Other Libraries
-import { jwtDecode } from "jwt-decode";
-import { GoogleLogin, googleLogout, type CredentialResponse } from "@react-oauth/google";
+import { type CredentialResponse } from "@react-oauth/google";
 
+// Import Custom Libraries
 import { type User, UserRole } from '../types';
-import { verifyGoogleToken } from '../services/auth';
+import { verifyGoogleToken, signIn } from '../services/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -16,6 +16,8 @@ interface AuthContextType {
   loginWithGoogle: (credentialResponse: CredentialResponse) => Promise<void>;
   logout: () => void;
   loading: boolean;
+  error: string | null;
+  setError: (error: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +29,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for existing session
@@ -34,8 +37,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         // In a real app, this would check localStorage, cookies, or make an API call
         const storedUser = localStorage.getItem('user');
+        const storedEmail = localStorage.getItem('email');
+        const storedToken = localStorage.getItem('token');
         if (storedUser) {
           setUser(JSON.parse(storedUser));
+          localStorage.setItem('email', storedEmail!);
+          localStorage.setItem('token', storedToken!);
         }
       } catch (error) {
         console.error('Auth check failed:', error);
@@ -47,27 +54,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = async (email: string) => {
+  const login = async (email: string, password: string) => {
     setLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock user data - in real app this would come from your backend
-      const mockUser: User = {
+      const response = await signIn(email, password);
+      console.log("[DEBUG] Response:", response);
+
+      setUser({
         id: 1,
         email,
-        name: 'Demo User',
-        role: UserRole.ADMIN,
-        restaurant_ids: [1, 2],
+        name: response.name,
+        role: response.role,
+        restaurant_ids: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Login failed:', error);
+      });
+      localStorage.setItem('user', JSON.stringify(response));
+      localStorage.setItem('email', email);
+      localStorage.setItem('token', response.token);
+    } catch (error: any) {
+      setError(error?.response?.data?.error || 'Login failed. Please try again.');
+      console.error('Login failed:', error?.response?.data?.error || error?.message || 'Unknown error');
       throw error;
     } finally {
       setLoading(false);
@@ -78,27 +86,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     try {
       const idToken = credentialResponse.credential;
-      console.log("[DEBUG] ID Token:", idToken);
       const response = await verifyGoogleToken(idToken!);
       console.log("[DEBUG] Response:", response);
-      // const payload = jwtDecode(idToken!);
-      
-      // console.log("[DEBUG] Payload:", payload);
-      // Mock Google user data
-      // const mockUser: User = {
-      //   id: 1,
-      //   email: payload.email!,
-      //   name: payload.given_name!,
-      //   role: UserRole.ADMIN,
-      //   restaurant_ids: [1, 2],
-      //   created_at: new Date().toISOString(),
-      //   updated_at: new Date().toISOString()
-      // };
-      
-      // setUser(mockUser);
-      // localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Google login failed:', error);
+
+      setUser({
+        id: 1,
+        email: response.email,
+        name: response.name,
+        role: response.role,
+        restaurant_ids: [1, 2],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+
+      localStorage.setItem('user', JSON.stringify(response));
+      localStorage.setItem('email', response.email);
+      localStorage.setItem('token', response.token);
+    } catch (error: any) {
+      setError(error?.response?.data?.error || 'Google login failed. Please try again.');
+      console.error('Google login failed:', error?.response?.data?.error);
       throw error;
     } finally {
       setLoading(false);
@@ -108,6 +114,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('email');
+    localStorage.removeItem('token');
   };
 
   const value: AuthContextType = {
@@ -117,7 +125,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     loginWithGoogle,
     logout,
-    loading
+    loading,
+    error,
+    setError
   };
 
   return (

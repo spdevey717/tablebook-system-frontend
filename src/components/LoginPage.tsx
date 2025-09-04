@@ -3,24 +3,20 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 // Import Other Libraries
-import { jwtDecode } from "jwt-decode";
-import { GoogleLogin, googleLogout, type CredentialResponse } from "@react-oauth/google";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 // Import Custom Libraries
 import { useAuth } from '../contexts/AuthContext';
-
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID; // Replace with your Google Client ID
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const { login, loginWithGoogle, isAuthenticated, isAdmin } = useAuth();
+  const { login, loginWithGoogle, isAuthenticated, isAdmin, error, setError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -81,7 +77,7 @@ const LoginPage: React.FC = () => {
       setSuccess(true);
       setError('');
     } catch (error) {
-      setError('Login failed. Please try again.');
+      console.error('[ERROR] Error logging in:', error);
     } finally {
       setIsLoading(false);
     }
@@ -98,7 +94,7 @@ const LoginPage: React.FC = () => {
       setSuccess(true);
       setError('');
     } catch (error) {
-      setError('Google login failed. Please try again.');
+      console.error('[ERROR] Error logging in with Google:', error);
     }
   };
 
