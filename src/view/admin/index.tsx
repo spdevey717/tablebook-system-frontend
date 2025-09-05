@@ -5,6 +5,7 @@ import {
   DashboardPage,
   UsersPage,
   BookingsPage,
+  PhoneUploadPage,
   SettingsPage
 } from "../../page/admin";
 import RestaurantsPage from "../../page/admin/restaurants";
@@ -18,6 +19,7 @@ const AdminView = () => {
           <Route path="restaurants" element={<RestaurantsPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="bookings" element={<BookingsPage />} />
+          <Route path="phone-upload" element={<PhoneUploadPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>
