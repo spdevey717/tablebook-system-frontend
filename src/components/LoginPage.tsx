@@ -24,17 +24,22 @@ const LoginPage: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
       // If user is already authenticated and just arrived at login page, redirect them
+      console.log("[DEBUG] User is already authenticated and just arrived at login page, redirecting them");
       if (!success) {
         const from = location.state?.from?.pathname || '/';
+        console.log("[DEBUG] From:", from);
         
         // If user was trying to access admin panel and is admin, redirect there
         if (from.startsWith('/admin') && isAdmin) {
+          console.log("[DEBUG] User was trying to access admin panel and is admin, redirecting them");
           navigate('/admin');
         } else if (from.startsWith('/admin') && !isAdmin) {
           // If user is not admin but was trying to access admin, redirect to home
+          console.log("[DEBUG] User was trying to access admin panel and is not admin, redirecting them to home");
           navigate('/');
         } else {
           // Otherwise redirect to where they were trying to go
+          console.log("[DEBUG] User was trying to access admin panel and is not admin, redirecting them to where they were trying to go");
           navigate(from);
         }
         return;

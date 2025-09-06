@@ -19,13 +19,13 @@ const HomePage = () => {
             Find, reserve, and enjoy your dining experience with just a few clicks.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-6 mb-16">
-            <LinkButton href="/page1" className="btn-primary text-lg px-10 py-4 flex items-center gap-2">
+            <LinkButton href="/restaurants" className="btn-primary text-lg px-10 py-4 flex items-center gap-2">
               <RestaurantIcon size={24} />
               Find Restaurants
             </LinkButton>
-            <LinkButton href="/admin" className="btn-secondary text-lg px-10 py-4 flex items-center gap-2">
+            <LinkButton href="/login" className="btn-secondary text-lg px-10 py-4 flex items-center gap-2">
               <SettingsIcon size={24} />
-              Admin Panel
+              Login Panel
             </LinkButton>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import ClientLayout from "../../layout/client";
 import {
   HomePage,
-  Page1
+  RestaurantsPage
 } from "../../page/client";
 
 const ClientView = () => {
@@ -10,7 +10,7 @@ const ClientView = () => {
     <Routes>
       <Route path="/" element={<ClientLayout />}>
         <Route index element={<HomePage />} />
-        <Route path="page1" element={<Page1 />} />
+        <Route path="restaurants" element={<RestaurantsPage />} />
       </Route>
     </Routes>
   );

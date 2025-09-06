@@ -1,7 +1,7 @@
 import LinkButton from "../../../components/LinkButton";
-import { SearchIcon, StarIcon, PizzaIcon } from "../../../components/Icons";
+import { SearchIcon, StarIcon, PizzaIcon, SushiIcon, SteakIcon, PastaIcon, NoodlesIcon, BurgerIcon } from "../../../components/Icons";
 
-const Page1 = () => {
+const RestaurantsPage = () => {
   const restaurants = [
     {
       id: 1,
@@ -11,64 +11,64 @@ const Page1 = () => {
       priceRange: "",
       icon: PizzaIcon,
       description: "",
-      // location: "Downtown",
-      // waitTime: "15-20 min"
+      location: "Downtown",
+      waitTime: "15-20 min"
+    },
+    {
+      id: 2,
+      name: "Sushi Bar",
+      cuisine: "Japanese",
+      rating: 4.8,
+      priceRange: "$$$",
+      icon: SushiIcon,
+      description: "Fresh sushi and traditional Japanese cuisine",
+      location: "Riverside",
+      waitTime: "10-15 min"
+    },
+    {
+      id: 3,
+      name: "Steak House",
+      cuisine: "American",
+      rating: 4.3,
+      priceRange: "$$$",
+      icon: SteakIcon,
+      description: "Premium steaks and grilled specialties",
+      location: "Uptown",
+      waitTime: "20-25 min"
+    },
+    {
+      id: 4,
+      name: "Italian Kitchen",
+      cuisine: "Italian",
+      rating: 4.6,
+      priceRange: "$$",
+      icon: PastaIcon,
+      description: "Classic Italian dishes in a cozy atmosphere",
+      location: "Midtown",
+      waitTime: "12-18 min"
+    },
+    {
+      id: 5,
+      name: "Thai Spice",
+      cuisine: "Thai",
+      rating: 4.4,
+      priceRange: "$$",
+      icon: NoodlesIcon,
+      description: "Authentic Thai flavors and spices",
+      location: "Chinatown",
+      waitTime: "8-12 min"
+    },
+    {
+      id: 6,
+      name: "Burger Joint",
+      cuisine: "American",
+      rating: 4.2,
+      priceRange: "$",
+      icon: BurgerIcon,
+      description: "Gourmet burgers and comfort food",
+      location: "Westside",
+      waitTime: "5-10 min"
     }
-    // {
-    //   id: 2,
-    //   name: "Sushi Bar",
-    //   cuisine: "Japanese",
-    //   rating: 4.8,
-    //   priceRange: "$$$",
-    //   icon: SushiIcon,
-    //   description: "Fresh sushi and traditional Japanese cuisine",
-    //   location: "Riverside",
-    //   waitTime: "10-15 min"
-    // },
-    // {
-    //   id: 3,
-    //   name: "Steak House",
-    //   cuisine: "American",
-    //   rating: 4.3,
-    //   priceRange: "$$$",
-    //   icon: SteakIcon,
-    //   description: "Premium steaks and grilled specialties",
-    //   location: "Uptown",
-    //   waitTime: "20-25 min"
-    // },
-    // {
-    //   id: 4,
-    //   name: "Italian Kitchen",
-    //   cuisine: "Italian",
-    //   rating: 4.6,
-    //   priceRange: "$$",
-    //   icon: PastaIcon,
-    //   description: "Classic Italian dishes in a cozy atmosphere",
-    //   location: "Midtown",
-    //   waitTime: "12-18 min"
-    // },
-    // {
-    //   id: 5,
-    //   name: "Thai Spice",
-    //   cuisine: "Thai",
-    //   rating: 4.4,
-    //   priceRange: "$$",
-    //   icon: NoodlesIcon,
-    //   description: "Authentic Thai flavors and spices",
-    //   location: "Chinatown",
-    //   waitTime: "8-12 min"
-    // },
-    // {
-    //   id: 6,
-    //   name: "Burger Joint",
-    //   cuisine: "American",
-    //   rating: 4.2,
-    //   priceRange: "$",
-    //   icon: BurgerIcon,
-    //   description: "Gourmet burgers and comfort food",
-    //   location: "Westside",
-    //   waitTime: "5-10 min"
-    // }
   ];
 
   return (
@@ -154,4 +154,4 @@ const Page1 = () => {
   );
 };
 
-export default Page1;
+export default RestaurantsPage;

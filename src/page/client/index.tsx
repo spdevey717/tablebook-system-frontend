@@ -1,4 +1,4 @@
 import HomePage from "./home";
-import Page1 from "./page1";
+import RestaurantsPage from "./restaurants";
 
-export { HomePage, Page1 };
+export { HomePage, RestaurantsPage };
