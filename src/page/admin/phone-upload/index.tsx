@@ -28,6 +28,10 @@ const PhoneUploadPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const onDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -54,6 +58,7 @@ const PhoneUploadPage: React.FC = () => {
 
       if (result.success) {
         setPhoneData(result.data.results);
+        setCurrentPage(1); // Reset to first page when new data is loaded
         if (result.data.errors && result.data.errors.length > 0) {
           setErrors(result.data.errors);
         }
@@ -115,6 +120,36 @@ const PhoneUploadPage: React.FC = () => {
     setPhoneData([]);
     setUploadedFile(null);
     setErrors([]);
+    setCurrentPage(1); // Reset to first page when clearing data
+  };
+
+  // Pagination calculations
+  const totalItems = phoneData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = phoneData.slice(startIndex, endIndex);
+
+  // Pagination handlers
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page when changing items per page
   };
 
   const validCount = phoneData.filter(row => row.isValid).length;
@@ -200,15 +235,40 @@ const PhoneUploadPage: React.FC = () => {
                 </h3>
                 <p className="text-sm text-gray-600 mt-1">
                   {phoneData.length} total numbers • {validCount} valid • {invalidCount} invalid
+                  {totalPages > 1 && (
+                    <span className="ml-2 text-primary-600">
+                      • Page {currentPage} of {totalPages}
+                    </span>
+                  )}
                 </p>
               </div>
-              <button
-                onClick={downloadResults}
-                className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                <span>Download Results</span>
-              </button>
+              <div className="flex items-center space-x-4">
+                {/* Items per page selector */}
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="itemsPerPage" className="text-sm text-gray-600">
+                    Show:
+                  </label>
+                  <select
+                    id="itemsPerPage"
+                    value={itemsPerPage}
+                    onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                    className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                </div>
+                <button
+                  onClick={downloadResults}
+                  className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download Results</span>
+                </button>
+              </div>
             </div>
           </div>
           
@@ -270,8 +330,10 @@ const PhoneUploadPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {phoneData.map((row, index) => (
-                  <tr key={index} className={row.isValid ? 'bg-green-50' : 'bg-red-50'}>
+                {currentData.map((row, index) => {
+                  const actualIndex = startIndex + index; // Calculate the actual index in the full dataset
+                  return (
+                  <tr key={actualIndex} className={row.isValid ? 'bg-green-50' : 'bg-red-50'}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {row.isValid ? (
                         <CheckCircle className="w-5 h-5 text-green-500" />
@@ -337,13 +399,103 @@ const PhoneUploadPage: React.FC = () => {
                       {row.call_duration_sec}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {row.notes}
+                      {row.booking_ref}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-700">
+                  Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} results
+                </div>
+                <div className="flex items-center space-x-2">
+                  {/* Previous button */}
+                  <button
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+
+                  {/* Page numbers */}
+                  <div className="flex items-center space-x-1">
+                    {/* Show first page */}
+                    {currentPage > 3 && (
+                      <>
+                        <button
+                          onClick={() => goToPage(1)}
+                          className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+                        >
+                          1
+                        </button>
+                        {currentPage > 4 && <span className="px-2 text-gray-500">...</span>}
+                      </>
+                    )}
+
+                    {/* Show pages around current page */}
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+
+                      if (pageNum < 1 || pageNum > totalPages) return null;
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => goToPage(pageNum)}
+                          className={`px-3 py-1 text-sm border rounded ${
+                            currentPage === pageNum
+                              ? 'bg-primary-600 text-white border-primary-600'
+                              : 'border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+
+                    {/* Show last page */}
+                    {currentPage < totalPages - 2 && (
+                      <>
+                        {currentPage < totalPages - 3 && <span className="px-2 text-gray-500">...</span>}
+                        <button
+                          onClick={() => goToPage(totalPages)}
+                          className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+                        >
+                          {totalPages}
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Next button */}
+                  <button
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
