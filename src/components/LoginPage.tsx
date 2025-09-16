@@ -40,7 +40,7 @@ const LoginPage: React.FC = () => {
         } else {
           // Otherwise redirect to where they were trying to go
           console.log("[DEBUG] User was trying to access admin panel and is not admin, redirecting them to where they were trying to go");
-          navigate(from);
+          navigate('/admin');
         }
         return;
       }

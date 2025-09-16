@@ -35,7 +35,7 @@ const AdminSidebar = () => {
         ))}
       </nav>
       
-      <div className="absolute bottom-8 left-8 right-8">
+      {/* <div className="absolute bottom-8 left-8 right-8">
         <div className="card bg-white/10 backdrop-blur-sm p-4 rounded-xl">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center text-white font-bold">
@@ -47,7 +47,7 @@ const AdminSidebar = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

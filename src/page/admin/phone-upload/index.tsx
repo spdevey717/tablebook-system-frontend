@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, AlertCircle, CheckCircle, Phone, Download, Trash2 } from 'lucide-react';
-import { useAuth } from '../../../contexts/AuthContext';
-
-interface PhoneNumberData {
-  phone_number: string;
-  name?: string;
-  email?: string;
-  notes?: string;
-}
 
 interface NormalizedPhoneData {
   original: string;
   normalized: string;
   isValid: boolean;
   error?: string;
-  name?: string;
-  email?: string;
+  guest_firstname?: string;
+  guest_surname?: string;
+  booking_date?: string;
+  booking_time?: string;
+  party_size?: string;
   notes?: string;
+  outcome?: string;
+  new_time?: string;
+  new_date?: string;
+  new_party_size?: string;
+  confirmation_call_notes?: string;
+  recording_url?: string;
+  call_duration_sec?: string;
+  booking_ref?: string;
 }
 
 const PhoneUploadPage: React.FC = () => {
@@ -25,43 +28,6 @@ const PhoneUploadPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const { user } = useAuth();
-
-  const normalizePhoneNumber = (phone: string): { normalized: string; isValid: boolean; error?: string } => {
-    try {
-      // Remove all non-digit characters except +
-      let cleaned = phone.replace(/[^\d+]/g, '');
-      
-      // If it doesn't start with +, assume it's a local number
-      if (!cleaned.startsWith('+')) {
-        // Remove leading zeros
-        cleaned = cleaned.replace(/^0+/, '');
-        // Add default country code (you can make this configurable)
-        cleaned = '+44' + cleaned;
-      }
-      
-      // Basic validation - should be at least 10 digits after country code
-      const digitsOnly = cleaned.replace(/[^\d]/g, '');
-      if (digitsOnly.length < 10) {
-        return {
-          normalized: phone,
-          isValid: false,
-          error: 'Phone number too short'
-        };
-      }
-      
-      return {
-        normalized: cleaned,
-        isValid: true
-      };
-    } catch (error) {
-      return {
-        normalized: phone,
-        isValid: false,
-        error: 'Invalid format'
-      };
-    }
-  };
 
   const onDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -76,7 +42,7 @@ const PhoneUploadPage: React.FC = () => {
       formData.append('csvFile', file);
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/phone-upload/upload', {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/phone-upload/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -113,15 +79,26 @@ const PhoneUploadPage: React.FC = () => {
 
   const downloadResults = () => {
     const csvContent = [
-      ['Original Phone', 'Normalized Phone', 'Valid', 'Error', 'Name', 'Email', 'Notes'],
+      ['Original Phone', 'Normalized Phone', 'Valid', 'Error', 'Guest Firstname', 'Guest Surname', 'Booking Date', 'Booking Time', 'Party Size', 'Notes', 'Outcome', 'New Time', 'New Date', 'New Party Size', 'Confirmation Call Notes', 'Recording URL', 'Call Duration Sec', 'Booking Ref'],
       ...phoneData.map(row => [
         row.original,
         row.normalized,
         row.isValid ? 'Yes' : 'No',
         row.error || '',
-        row.name || '',
-        row.email || '',
-        row.notes || ''
+        row.guest_firstname || '',
+        row.guest_surname || '',
+        row.booking_date || '',
+        row.booking_time || '',
+        row.party_size || '',
+        row.notes || '',
+        row.outcome || '',
+        row.new_time || '',
+        row.new_date || '',
+        row.new_party_size || '',
+        row.confirmation_call_notes || '',
+        row.recording_url || '',
+        row.call_duration_sec || '',
+        row.booking_ref || ''
       ])
     ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
 
@@ -249,13 +226,46 @@ const PhoneUploadPage: React.FC = () => {
                     Normalized Phone
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
+                    Guest Firstname
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
+                    Guest Surname
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Booking Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Booking Time
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Party Size
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Notes
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Outcome
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    New Time
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    New Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    New Party Size
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Confirmation Call Notes
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Recording URL
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Call Duration Sec
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Booking Ref
                   </th>
                 </tr>
               </thead>
@@ -288,10 +298,43 @@ const PhoneUploadPage: React.FC = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {row.name}
+                      {row.guest_firstname}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {row.email}
+                      {row.guest_surname}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {row.booking_date}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {row.booking_time}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {row.party_size}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {row.notes}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {row.outcome}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {row.new_time}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {row.new_date}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {row.new_party_size}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {row.confirmation_call_notes}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {row.recording_url}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {row.call_duration_sec}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {row.notes}
