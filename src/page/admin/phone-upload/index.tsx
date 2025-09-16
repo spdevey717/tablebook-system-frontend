@@ -32,6 +32,9 @@ const PhoneUploadPage: React.FC = () => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  // Selection state
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
 
   const onDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -116,11 +119,81 @@ const PhoneUploadPage: React.FC = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  const downloadSelectedResults = () => {
+    const selectedData = phoneData.filter((_, index) => selectedRows.has(index));
+    const csvContent = [
+      ['Original Phone', 'Normalized Phone', 'Valid', 'Error', 'Guest Firstname', 'Guest Surname', 'Booking Date', 'Booking Time', 'Party Size', 'Notes', 'Outcome', 'New Time', 'New Date', 'New Party Size', 'Confirmation Call Notes', 'Recording URL', 'Call Duration Sec', 'Booking Ref'],
+      ...selectedData.map(row => [
+        row.original,
+        row.normalized,
+        row.isValid ? 'Yes' : 'No',
+        row.error || '',
+        row.guest_firstname || '',
+        row.guest_surname || '',
+        row.booking_date || '',
+        row.booking_time || '',
+        row.party_size || '',
+        row.notes || '',
+        row.outcome || '',
+        row.new_time || '',
+        row.new_date || '',
+        row.new_party_size || '',
+        row.confirmation_call_notes || '',
+        row.recording_url || '',
+        row.call_duration_sec || '',
+        row.booking_ref || ''
+      ])
+    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `selected_phone_numbers_${selectedRows.size}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   const clearData = () => {
     setPhoneData([]);
     setUploadedFile(null);
     setErrors([]);
     setCurrentPage(1); // Reset to first page when clearing data
+    setSelectedRows(new Set()); // Clear selections
+  };
+
+  // Selection handlers
+  const toggleRowSelection = (index: number) => {
+    const newSelection = new Set(selectedRows);
+    if (newSelection.has(index)) {
+      newSelection.delete(index);
+    } else {
+      newSelection.add(index);
+    }
+    setSelectedRows(newSelection);
+  };
+
+  const selectAllRows = () => {
+    const allIndices = phoneData.map((_, index) => index);
+    setSelectedRows(new Set(allIndices));
+  };
+
+  const clearAllSelections = () => {
+    setSelectedRows(new Set());
+  };
+
+  const selectCurrentPageRows = () => {
+    const currentPageIndices = currentData.map((_, index) => startIndex + index);
+    const newSelection = new Set(selectedRows);
+    currentPageIndices.forEach(index => newSelection.add(index));
+    setSelectedRows(newSelection);
+  };
+
+  const clearCurrentPageSelections = () => {
+    const currentPageIndices = currentData.map((_, index) => startIndex + index);
+    const newSelection = new Set(selectedRows);
+    currentPageIndices.forEach(index => newSelection.delete(index));
+    setSelectedRows(newSelection);
   };
 
   // Pagination calculations
@@ -240,6 +313,11 @@ const PhoneUploadPage: React.FC = () => {
                       • Page {currentPage} of {totalPages}
                     </span>
                   )}
+                  {selectedRows.size > 0 && (
+                    <span className="ml-2 text-blue-600">
+                      • {selectedRows.size} selected
+                    </span>
+                  )}
                 </p>
               </div>
               <div className="flex items-center space-x-4">
@@ -259,15 +337,61 @@ const PhoneUploadPage: React.FC = () => {
                     <option value={25}>25</option>
                     <option value={50}>50</option>
                     <option value={100}>100</option>
+                    <option value={phoneData.length}>Show All</option>
                   </select>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={downloadResults}
+                    className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download All</span>
+                  </button>
+                  {selectedRows.size > 0 && (
+                    <button
+                      onClick={downloadSelectedResults}
+                      className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Download Selected ({selectedRows.size})</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Selection Controls */}
+          <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
                 <button
-                  onClick={downloadResults}
-                  className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+                  onClick={selectAllRows}
+                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
                 >
-                  <Download className="w-4 h-4" />
-                  <span>Download Results</span>
+                  Select All ({phoneData.length})
                 </button>
+                <button
+                  onClick={selectCurrentPageRows}
+                  className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                >
+                  Select Current Page ({currentData.length})
+                </button>
+                <button
+                  onClick={clearAllSelections}
+                  disabled={selectedRows.size === 0}
+                  className="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                >
+                  Clear All
+                </button>
+              </div>
+              <div className="text-sm text-gray-600">
+                {selectedRows.size > 0 && (
+                  <span className="text-blue-600 font-medium">
+                    {selectedRows.size} row{selectedRows.size !== 1 ? 's' : ''} selected
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -276,6 +400,39 @@ const PhoneUploadPage: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex flex-col space-y-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.size === phoneData.length && phoneData.length > 0}
+                        onChange={() => {
+                          if (selectedRows.size === phoneData.length) {
+                            clearAllSelections();
+                          } else {
+                            selectAllRows();
+                          }
+                        }}
+                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                        title="Select All"
+                      />
+                      {totalPages > 1 && (
+                        <input
+                          type="checkbox"
+                          checked={currentData.every((_, index) => selectedRows.has(startIndex + index)) && currentData.length > 0}
+                          onChange={() => {
+                            const allCurrentPageSelected = currentData.every((_, index) => selectedRows.has(startIndex + index));
+                            if (allCurrentPageSelected) {
+                              clearCurrentPageSelections();
+                            } else {
+                              selectCurrentPageRows();
+                            }
+                          }}
+                          className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                          title="Select Current Page"
+                        />
+                      )}
+                    </div>
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
@@ -333,7 +490,15 @@ const PhoneUploadPage: React.FC = () => {
                 {currentData.map((row, index) => {
                   const actualIndex = startIndex + index; // Calculate the actual index in the full dataset
                   return (
-                  <tr key={actualIndex} className={row.isValid ? 'bg-green-50' : 'bg-red-50'}>
+                  <tr key={actualIndex} className={`${row.isValid ? 'bg-green-50' : 'bg-red-50'} ${selectedRows.has(actualIndex) ? 'ring-2 ring-blue-500' : ''}`}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.has(actualIndex)}
+                        onChange={() => toggleRowSelection(actualIndex)}
+                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {row.isValid ? (
                         <CheckCircle className="w-5 h-5 text-green-500" />
