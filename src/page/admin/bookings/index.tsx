@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Download, Trash2, RefreshCw, Phone, Calendar, Users, FileText } from 'lucide-react';
 import bookingService, { type Booking } from '../../../services/bookingService';
 
@@ -8,10 +8,22 @@ const BookingsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  // Selection state
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchBookings();
   }, []);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   const fetchBookings = async () => {
     try {
@@ -103,6 +115,99 @@ const BookingsPage = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // Pagination calculations
+  const totalItems = filteredBookings.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredBookings.slice(startIndex, endIndex);
+
+  // Selection handlers
+  const toggleRowSelection = (bookingId: string) => {
+    const newSelection = new Set(selectedRows);
+    if (newSelection.has(bookingId)) {
+      newSelection.delete(bookingId);
+    } else {
+      newSelection.add(bookingId);
+    }
+    setSelectedRows(newSelection);
+  };
+
+  const selectAllRows = () => {
+    const allIds = filteredBookings.map(booking => booking._id);
+    setSelectedRows(new Set(allIds));
+  };
+
+  const clearAllSelections = () => {
+    setSelectedRows(new Set());
+  };
+
+  const selectCurrentPageRows = () => {
+    const currentPageIds = currentData.map(booking => booking._id);
+    const newSelection = new Set(selectedRows);
+    currentPageIds.forEach(id => newSelection.add(id));
+    setSelectedRows(newSelection);
+  };
+
+  const clearCurrentPageSelections = () => {
+    const currentPageIds = currentData.map(booking => booking._id);
+    const newSelection = new Set(selectedRows);
+    currentPageIds.forEach(id => newSelection.delete(id));
+    setSelectedRows(newSelection);
+  };
+
+  // Pagination handlers
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
+
+  // Export selected data
+  const exportSelectedData = () => {
+    const selectedBookings = bookings.filter(booking => selectedRows.has(booking._id));
+    const csvContent = [
+      ['Booking Ref', 'Phone Number', 'Guest Name', 'Booking Date', 'Booking Time', 'Party Size', 'Status', 'Outcome', 'Notes', 'Confirmation Notes', 'Recording URL', 'Call Duration'],
+      ...selectedBookings.map(booking => [
+        booking.booking_ref,
+        booking.phone_number,
+        `${booking.guest_firstname} ${booking.guest_surname}`,
+        booking.booking_date,
+        booking.booking_time,
+        booking.party_size,
+        booking.status,
+        booking.outcome,
+        booking.notes,
+        booking.confirmation_call_notes,
+        booking.recording_url,
+        booking.call_duration_sec || ''
+      ])
+    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `selected_bookings_${selectedRows.size}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -119,6 +224,16 @@ const BookingsPage = () => {
           <h1 className="text-3xl font-bold text-gray-900">Bookings</h1>
           <p className="text-gray-600">
             Manage all restaurant bookings • {bookings.length} total bookings
+            {totalPages > 1 && (
+              <span className="ml-2 text-blue-600">
+                • Page {currentPage} of {totalPages}
+              </span>
+            )}
+            {selectedRows.size > 0 && (
+              <span className="ml-2 text-green-600">
+                • {selectedRows.size} selected
+              </span>
+            )}
           </p>
         </div>
         <div className="flex space-x-3">
@@ -135,8 +250,17 @@ const BookingsPage = () => {
             className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             <Download className="w-4 h-4" />
-            <span>Export Data</span>
+            <span>Export All</span>
           </button>
+          {selectedRows.size > 0 && (
+            <button
+              onClick={exportSelectedData}
+              className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export Selected ({selectedRows.size})</span>
+            </button>
+          )}
           <button
             onClick={clearAllData}
             disabled={bookings.length === 0}
@@ -160,25 +284,80 @@ const BookingsPage = () => {
             <h3 className="text-lg font-semibold text-gray-900">
               All Bookings ({filteredBookings.length} of {bookings.length})
             </h3>
-            <div className="flex space-x-2">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            <div className="flex items-center space-x-4">
+              {/* Items per page selector */}
+              <div className="flex items-center space-x-2">
+                <label htmlFor="itemsPerPage" className="text-sm text-gray-600">
+                  Show:
+                </label>
+                <select
+                  id="itemsPerPage"
+                  value={itemsPerPage}
+                  onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                  className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={filteredBookings.length}>Show All</option>
+                </select>
+              </div>
+              <div className="flex space-x-2">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="completed">Completed</option>
+                </select>
+                <input
+                  type="text"
+                  placeholder="Search bookings..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Selection Controls */}
+        <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={selectAllRows}
+                className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
               >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="completed">Completed</option>
-              </select>
-              <input
-                type="text"
-                placeholder="Search bookings..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+                Select All ({filteredBookings.length})
+              </button>
+              <button
+                onClick={selectCurrentPageRows}
+                className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+              >
+                Select Current Page ({currentData.length})
+              </button>
+              <button
+                onClick={clearAllSelections}
+                disabled={selectedRows.size === 0}
+                className="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              >
+                Clear All
+              </button>
+            </div>
+            <div className="text-sm text-gray-600">
+              {selectedRows.size > 0 && (
+                <span className="text-green-600 font-medium">
+                  {selectedRows.size} row{selectedRows.size !== 1 ? 's' : ''} selected
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -199,6 +378,39 @@ const BookingsPage = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex flex-col space-y-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.size === filteredBookings.length && filteredBookings.length > 0}
+                        onChange={() => {
+                          if (selectedRows.size === filteredBookings.length) {
+                            clearAllSelections();
+                          } else {
+                            selectAllRows();
+                          }
+                        }}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        title="Select All"
+                      />
+                      {totalPages > 1 && (
+                        <input
+                          type="checkbox"
+                          checked={currentData.every(booking => selectedRows.has(booking._id)) && currentData.length > 0}
+                          onChange={() => {
+                            const allCurrentPageSelected = currentData.every(booking => selectedRows.has(booking._id));
+                            if (allCurrentPageSelected) {
+                              clearCurrentPageSelections();
+                            } else {
+                              selectCurrentPageRows();
+                            }
+                          }}
+                          className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                          title="Select Current Page"
+                        />
+                      )}
+                    </div>
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Booking Ref
                   </th>
@@ -247,8 +459,16 @@ const BookingsPage = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredBookings.map((booking) => (
-                  <tr key={booking._id} className="hover:bg-gray-50">
+                {currentData.map((booking) => (
+                  <tr key={booking._id} className={`hover:bg-gray-50 ${selectedRows.has(booking._id) ? 'ring-2 ring-blue-500 bg-blue-50' : ''}`}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.has(booking._id)}
+                        onChange={() => toggleRowSelection(booking._id)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
                         {booking.booking_ref}
@@ -312,6 +532,95 @@ const BookingsPage = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} results
+              </div>
+              <div className="flex items-center space-x-2">
+                {/* Previous button */}
+                <button
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+
+                {/* Page numbers */}
+                <div className="flex items-center space-x-1">
+                  {/* Show first page */}
+                  {currentPage > 3 && (
+                    <>
+                      <button
+                        onClick={() => goToPage(1)}
+                        className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+                      >
+                        1
+                      </button>
+                      {currentPage > 4 && <span className="px-2 text-gray-500">...</span>}
+                    </>
+                  )}
+
+                  {/* Show pages around current page */}
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    if (pageNum < 1 || pageNum > totalPages) return null;
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => goToPage(pageNum)}
+                        className={`px-3 py-1 text-sm border rounded ${
+                          currentPage === pageNum
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  {/* Show last page */}
+                  {currentPage < totalPages - 2 && (
+                    <>
+                      {currentPage < totalPages - 3 && <span className="px-2 text-gray-500">...</span>}
+                      <button
+                        onClick={() => goToPage(totalPages)}
+                        className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+                      >
+                        {totalPages}
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Next button */}
+                <button
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
