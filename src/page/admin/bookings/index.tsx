@@ -98,6 +98,7 @@ const BookingsPage = () => {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
       case 'completed': return 'bg-blue-100 text-blue-800';
+      case 'idle': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -245,6 +246,16 @@ const BookingsPage = () => {
             <span>Refresh</span>
           </button>
           <button
+            onClick={() => {
+              // TODO: Implement check bookings functionality
+              alert('Check bookings functionality will be implemented here');
+            }}
+            className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors"
+          >
+            <Phone className="w-4 h-4" />
+            <span>Check Bookings</span>
+          </button>
+          <button
             onClick={exportData}
             disabled={filteredBookings.length === 0}
             className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
@@ -267,7 +278,7 @@ const BookingsPage = () => {
             className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             <Trash2 className="w-4 h-4" />
-            <span>Clear All</span>
+            <span>Remove All</span>
           </button>
         </div>
       </div>
@@ -311,6 +322,7 @@ const BookingsPage = () => {
                   className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="all">All Status</option>
+                  <option value="idle">Idle</option>
                   <option value="pending">Pending</option>
                   <option value="confirmed">Confirmed</option>
                   <option value="cancelled">Cancelled</option>
@@ -460,7 +472,11 @@ const BookingsPage = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {currentData.map((booking) => (
-                  <tr key={booking._id} className={`hover:bg-gray-50 ${selectedRows.has(booking._id) ? 'ring-2 ring-blue-500 bg-blue-50' : ''}`}>
+                  <tr 
+                    key={booking._id} 
+                    className={`hover:bg-gray-50 cursor-pointer ${selectedRows.has(booking._id) ? 'bg-blue-100' : ''}`}
+                    onClick={() => toggleRowSelection(booking._id)}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <input
                         type="checkbox"
