@@ -88,6 +88,48 @@ class BookingService {
       };
     }
   }
+
+  async checkBookings(selectedBookings: string[]): Promise<{ 
+    success: boolean; 
+    data?: {
+      results: Array<{
+        bookingId: string;
+        bookingRef: string;
+        phoneNumber: string;
+        status: string;
+        callId: string | null;
+        error: string | null;
+      }>;
+      errors?: string[];
+      summary: {
+        total: number;
+        successful: number;
+        failed: number;
+      };
+    }; 
+    error?: string 
+  }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/booking/check-booking`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ selectedBookings }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error checking bookings:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+      };
+    }
+  }
 }
 
 export default new BookingService();

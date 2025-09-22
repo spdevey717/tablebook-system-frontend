@@ -15,6 +15,10 @@ const BookingsPage = () => {
   
   // Selection state
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  
+  // Check bookings state
+  const [isCheckingBookings, setIsCheckingBookings] = useState(false);
+  const [checkResults, setCheckResults] = useState<any>(null);
 
   useEffect(() => {
     fetchBookings();
@@ -64,6 +68,50 @@ const BookingsPage = () => {
     }
   };
 
+  const handleCheckBookings = async () => {
+    if (selectedRows.size === 0) {
+      alert('Please select at least one booking to check.');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to make outbound calls to ${selectedRows.size} selected booking(s)? This will initiate phone calls to verify the bookings.`)) {
+      return;
+    }
+
+    try {
+      setIsCheckingBookings(true);
+      setCheckResults(null);
+      setError(null);
+
+      const selectedBookingsArray = Array.from(selectedRows);
+      const response = await bookingService.checkBookings(selectedBookingsArray);
+
+      if (response.success) {
+        setCheckResults(response.data);
+        
+        // Refresh the bookings to show updated statuses
+        await fetchBookings();
+        
+        // Clear selections after successful check
+        setSelectedRows(new Set());
+        
+        // Show success message
+        const { summary } = response.data!;
+        alert(`Check bookings completed!\n\nTotal: ${summary.total}\nSuccessful: ${summary.successful}\nFailed: ${summary.failed}`);
+      } else {
+        setError(response.error || 'Failed to check bookings');
+        alert('Error checking bookings: ' + (response.error || 'Unknown error'));
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError('Network error: ' + errorMessage);
+      alert('Error checking bookings: ' + errorMessage);
+      console.error('Error checking bookings:', err);
+    } finally {
+      setIsCheckingBookings(false);
+    }
+  };
+
   const exportData = () => {
     const csvContent = [
       ['Booking Ref', 'Phone Number', 'Guest Name', 'Booking Date', 'Booking Time', 'Party Size', 'Status', 'Outcome', 'Notes', 'Confirmation Notes', 'Recording URL', 'Call Duration'],
@@ -99,6 +147,8 @@ const BookingsPage = () => {
       case 'cancelled': return 'bg-red-100 text-red-800';
       case 'completed': return 'bg-blue-100 text-blue-800';
       case 'idle': return 'bg-gray-100 text-gray-800';
+      case 'calling': return 'bg-purple-100 text-purple-800';
+      case 'failed': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -246,14 +296,21 @@ const BookingsPage = () => {
             <span>Refresh</span>
           </button>
           <button
-            onClick={() => {
-              // TODO: Implement check bookings functionality
-              alert('Check bookings functionality will be implemented here');
-            }}
-            className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors"
+            onClick={handleCheckBookings}
+            disabled={selectedRows.size === 0 || isCheckingBookings}
+            className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
-            <Phone className="w-4 h-4" />
-            <span>Check Bookings</span>
+            {isCheckingBookings ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Checking...</span>
+              </>
+            ) : (
+              <>
+                <Phone className="w-4 h-4" />
+                <span>Check Bookings ({selectedRows.size})</span>
+              </>
+            )}
           </button>
           <button
             onClick={exportData}
@@ -286,6 +343,75 @@ const BookingsPage = () => {
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-700">{error}</p>
+        </div>
+      )}
+
+      {/* Check Results */}
+      {checkResults && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-blue-800 mb-4">Check Bookings Results</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="bg-white rounded-lg p-4">
+              <div className="text-2xl font-bold text-blue-600">{checkResults.summary.total}</div>
+              <div className="text-sm text-gray-600">Total Processed</div>
+            </div>
+            <div className="bg-white rounded-lg p-4">
+              <div className="text-2xl font-bold text-green-600">{checkResults.summary.successful}</div>
+              <div className="text-sm text-gray-600">Successful</div>
+            </div>
+            <div className="bg-white rounded-lg p-4">
+              <div className="text-2xl font-bold text-red-600">{checkResults.summary.failed}</div>
+              <div className="text-sm text-gray-600">Failed</div>
+            </div>
+          </div>
+          
+          {checkResults.results && checkResults.results.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-md font-medium text-blue-800 mb-2">Individual Results:</h4>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {checkResults.results.map((result: any, index: number) => (
+                  <div key={index} className="bg-white rounded p-3 text-sm">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="font-medium">{result.bookingRef}</span>
+                        <span className="text-gray-500 ml-2">({result.phoneNumber})</span>
+                      </div>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        result.status === 'pending' || result.status === 'completed' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {result.status}
+                      </span>
+                    </div>
+                    {result.callId && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        Call ID: {result.callId}
+                      </div>
+                    )}
+                    {result.error && (
+                      <div className="text-xs text-red-600 mt-1">
+                        Error: {result.error}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {checkResults.errors && checkResults.errors.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-md font-medium text-red-800 mb-2">Errors:</h4>
+              <div className="space-y-1">
+                {checkResults.errors.map((error: string, index: number) => (
+                  <div key={index} className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                    {error}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -323,10 +449,12 @@ const BookingsPage = () => {
                 >
                   <option value="all">All Status</option>
                   <option value="idle">Idle</option>
+                  <option value="calling">Calling</option>
                   <option value="pending">Pending</option>
                   <option value="confirmed">Confirmed</option>
                   <option value="cancelled">Cancelled</option>
                   <option value="completed">Completed</option>
+                  <option value="failed">Failed</option>
                 </select>
                 <input
                   type="text"
@@ -532,6 +660,12 @@ const BookingsPage = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-gray-900">{booking.new_party_size || 'N/A'}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-gray-900">{booking.notes || 'N/A'}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-gray-900">{booking.confirmation_call_notes || 'N/A'}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-gray-900">{booking.recording_url || 'N/A'}</span>
