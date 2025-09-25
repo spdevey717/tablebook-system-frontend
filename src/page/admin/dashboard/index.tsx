@@ -2,7 +2,6 @@ const DashboardPage = () => {
   const stats = [
     { label: "Total Users", value: "1,234", change: "+12%", icon: "👥", color: "primary" },
     { label: "Active Bookings", value: "89", change: "+5%", icon: "📅", color: "secondary" },
-    { label: "Restaurants", value: "45", change: "+3%", icon: "🍽️", color: "primary" },
     { label: "Calls Today", value: "23", change: "+15%", icon: "📞", color: "accent" },
   ];
 
@@ -72,10 +71,6 @@ const DashboardPage = () => {
             Quick Actions
           </h3>
           <div className="space-y-4">
-            <button className="w-full btn-primary text-left flex items-center">
-              <span className="mr-3">🍽️</span>
-              Manage Restaurants
-            </button>
             <button className="w-full btn-secondary text-left flex items-center">
               <span className="mr-3">📞</span>
               Call Queue Status

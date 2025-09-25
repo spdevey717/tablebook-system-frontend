@@ -8,7 +8,6 @@ import {
   PhoneUploadPage,
   SettingsPage
 } from "../../page/admin";
-import RestaurantsPage from "../../page/admin/restaurants";
 
 const AdminView = () => {
   return (
@@ -23,7 +22,6 @@ const AdminView = () => {
         </ProtectedRoute>
       }>
         <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="restaurants" element={<RestaurantsPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="bookings" element={<BookingsPage />} />
         <Route path="phone-upload" element={<PhoneUploadPage />} />

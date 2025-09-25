@@ -1,5 +1,5 @@
 import LinkButton from "../../../components/LinkButton";
-import { RestaurantIcon, SettingsIcon, CalendarIcon, CheckIcon } from "../../../components/Icons";
+import { SettingsIcon, CalendarIcon, CheckIcon } from "../../../components/Icons";
 
 const HomePage = () => {
   return (
@@ -19,25 +19,14 @@ const HomePage = () => {
             Find, reserve, and enjoy your dining experience with just a few clicks.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-6 mb-16">
-            <LinkButton href="/restaurants" className="btn-primary text-lg px-10 py-4 flex items-center gap-2">
-              <RestaurantIcon size={24} />
-              Find Restaurants
-            </LinkButton>
-            <LinkButton href="/auth/signin" className="btn-secondary text-lg px-10 py-4 flex items-center gap-2">
+            <LinkButton href="/auth/signin" className="btn-primary text-lg px-10 py-4 flex items-center gap-2">
               <SettingsIcon size={24} />
               Login Panel
             </LinkButton>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-slide-up max-w-6xl mx-auto">
-          <div className="card card-hover p-8 text-center group">
-            <div className="flex justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <RestaurantIcon size={64} className="text-primary-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Find Restaurants</h3>
-            <p className="text-gray-600 leading-relaxed">Discover amazing restaurants in your area with detailed menus, photos, and authentic reviews from food lovers.</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-slide-up max-w-4xl mx-auto">
           <div className="card card-hover p-8 text-center group">
             <div className="flex justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
               <CalendarIcon size={64} className="text-secondary-600" />

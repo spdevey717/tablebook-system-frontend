@@ -35,17 +35,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Check for existing session
     const checkAuth = async () => {
       try {
-        // In a real app, this would check localStorage, cookies, or make an API call
         const storedUser = localStorage.getItem('user');
-        const storedEmail = localStorage.getItem('email');
         const storedToken = localStorage.getItem('token');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-          localStorage.setItem('email', storedEmail!);
-          localStorage.setItem('token', storedToken!);
+        if (storedUser && storedToken) {
+          const userData = JSON.parse(storedUser);
+          setUser({
+            id: 1,
+            email: userData.email,
+            name: userData.name,
+            role: userData.role,
+            restaurant_ids: [],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
         }
       } catch (error) {
         console.error('Auth check failed:', error);
+        // Clear invalid data
+        localStorage.removeItem('user');
+        localStorage.removeItem('email');
+        localStorage.removeItem('token');
       } finally {
         setLoading(false);
       }

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { signIn } from '../../../services/auth';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface SigninFormData {
   email: string;
@@ -10,12 +10,20 @@ interface SigninFormData {
 
 const SigninPage = () => {
   const navigate = useNavigate();
+  const { login, isAuthenticated, isAdmin } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<SigninFormData>({
     email: '',
     password: ''
   });
   const [errors, setErrors] = useState<Partial<SigninFormData>>({});
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && isAdmin) {
+      navigate('/admin/dashboard');
+    }
+  }, [isAuthenticated, isAdmin, navigate]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<SigninFormData> = {};
@@ -61,21 +69,9 @@ const SigninPage = () => {
 
     setLoading(true);
     try {
-      const response = await signIn(formData.email, formData.password);
-
-      if (response.token) {
-        // Store token in localStorage
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify({
-          email: response.email,
-          name: response.name,
-          role: response.role
-        }));
-        console.log("GREAT");
-        
-        toast.success('Welcome back!');
-        navigate('/admin/dashboard');
-      }
+      await login(formData.email, formData.password);
+      toast.success('Welcome back!');
+      // Navigation will be handled by the useEffect when isAuthenticated becomes true
     } catch (error: any) {
       console.error('Signin error:', error);
       const errorMessage = error.response?.data?.error || 'Failed to sign in. Please try again.';
