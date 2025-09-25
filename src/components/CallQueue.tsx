@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, Clock, Play, Pause, Stop } from 'lucide-react';
+import { Play, Pause, StopCircle } from 'lucide-react';
 import { CallStatus } from '../types';
 import type { Booking, Restaurant } from '../types';
 
@@ -9,7 +9,7 @@ interface CallQueueProps {
 }
 
 const CallQueue: React.FC<CallQueueProps> = ({ restaurant, bookings }) => {
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(false);  
   const [calls, setCalls] = useState(bookings.map((b, i) => ({
     id: i + 1,
     booking: b,
@@ -53,7 +53,7 @@ const CallQueue: React.FC<CallQueueProps> = ({ restaurant, bookings }) => {
                   <Pause className="w-4 h-4 mr-2" /> Pause
                 </button>
                 <button onClick={stopQueue} className="px-4 py-2 bg-red-600 text-white rounded-xl">
-                  <Stop className="w-4 h-4 mr-2" /> Stop
+                  <StopCircle className="w-4 h-4 mr-2" /> Stop
                 </button>
               </>
             )}
