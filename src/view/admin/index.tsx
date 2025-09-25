@@ -6,7 +6,8 @@ import {
   UsersPage,
   BookingsPage,
   PhoneUploadPage,
-  SettingsPage
+  SettingsPage,
+  ProfilePage
 } from "../../page/admin";
 
 const AdminView = () => {
@@ -25,6 +26,7 @@ const AdminView = () => {
         <Route path="users" element={<UsersPage />} />
         <Route path="bookings" element={<BookingsPage />} />
         <Route path="phone-upload" element={<PhoneUploadPage />} />
+        <Route path="profile" element={<ProfilePage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>
