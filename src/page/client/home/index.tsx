@@ -23,7 +23,7 @@ const HomePage = () => {
               <RestaurantIcon size={24} />
               Find Restaurants
             </LinkButton>
-            <LinkButton href="/login" className="btn-secondary text-lg px-10 py-4 flex items-center gap-2">
+            <LinkButton href="/auth/signin" className="btn-secondary text-lg px-10 py-4 flex items-center gap-2">
               <SettingsIcon size={24} />
               Login Panel
             </LinkButton>

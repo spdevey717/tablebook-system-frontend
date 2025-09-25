@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "../../layout/admin";
 import ProtectedRoute from "../../components/ProtectedRoute";
 import {
@@ -12,18 +12,24 @@ import RestaurantsPage from "../../page/admin/restaurants";
 
 const AdminView = () => {
   return (
-    <ProtectedRoute requireAdmin>
-      <Routes>
-        <Route path="/" element={<AdminLayout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="restaurants" element={<RestaurantsPage />} />
-          <Route path="users" element={<UsersPage />} />
-          <Route path="bookings" element={<BookingsPage />} />
-          <Route path="phone-upload" element={<PhoneUploadPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-        </Route>
-      </Routes>
-    </ProtectedRoute>
+    <Routes>
+      {/* Redirect /admin to /admin/dashboard */}
+      <Route path="/" element={<Navigate to="dashboard" replace />} />
+      
+      {/* Protected admin routes */}
+      <Route path="/" element={
+        <ProtectedRoute requireAdmin>
+          <AdminLayout />
+        </ProtectedRoute>
+      }>
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="restaurants" element={<RestaurantsPage />} />
+        <Route path="users" element={<UsersPage />} />
+        <Route path="bookings" element={<BookingsPage />} />
+        <Route path="phone-upload" element={<PhoneUploadPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+      </Route>
+    </Routes>
   );
 };
 

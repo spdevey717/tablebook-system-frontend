@@ -12,6 +12,21 @@ const signIn = async (email: string, password: string) => {
     }
 }
 
+const signUp = async (email: string, password: string, name: string, role: string) => {
+    try {
+        const response = await axios.post(`${API_URL}/auth/sign-up`, { 
+            email, 
+            password, 
+            name, 
+            role 
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error signing up:', error);
+        throw error;
+    }
+}
+
 const verifyGoogleToken = async (token: string) => {
     try {
         const response = await axios.post(`${API_URL}/auth/verify-google-token`, { token });
@@ -23,6 +38,7 @@ const verifyGoogleToken = async (token: string) => {
 }
 
 export {
-    verifyGoogleToken,
-    signIn
+    signIn,
+    signUp,
+    verifyGoogleToken
 };

@@ -1,14 +1,17 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { LogOut, User, Settings } from 'lucide-react';
 
 const AdminHeader = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
 
   const handleLogout = () => {
     logout();
     setShowDropdown(false);
+    navigate('/auth/signin');
   };
 
   return (

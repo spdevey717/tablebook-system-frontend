@@ -4,7 +4,7 @@ const AdminSidebar = () => {
   const location = useLocation();
 
   const navItems = [
-    { path: "/admin", label: "Dashboard", icon: "📊" },
+    { path: "/admin/dashboard", label: "Dashboard", icon: "📊" },
     { path: "/admin/restaurants", label: "Restaurants", icon: "🍽️" },
     { path: "/admin/users", label: "Users", icon: "👥" },
     { path: "/admin/bookings", label: "Bookings", icon: "📅" },

@@ -4,6 +4,8 @@ import {
   HomePage,
   RestaurantsPage
 } from "../../page/client";
+import SigninPage from "../../page/admin/auth/signin";
+import SignupPage from "../../page/admin/auth/signup";
 
 const ClientView = () => {
   return (
@@ -12,6 +14,8 @@ const ClientView = () => {
         <Route index element={<HomePage />} />
         <Route path="restaurants" element={<RestaurantsPage />} />
       </Route>
+      <Route path="auth/signin" element={<SigninPage />} />
+      <Route path="auth/signup" element={<SignupPage />} />
     </Routes>
   );
 };
