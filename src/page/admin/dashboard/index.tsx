@@ -1,9 +1,58 @@
+import { useState, useEffect } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import userService from '../../../services/userService';
+import callService, { type Call, type CallStats } from '../../../services/callService';
+
 const DashboardPage = () => {
+  const [userCount, setUserCount] = useState(0);
+  const [callStats, setCallStats] = useState<CallStats>({ total: 0, success: 0, failed: 0, today: 0 });
+  const [recentCalls, setRecentCalls] = useState<Call[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch user count
+        const userResponse = await userService.getAllUsers();
+        if (userResponse.success) {
+          setUserCount(userResponse.data.count);
+        }
+
+        // Fetch call stats
+        const callStatsResponse = await callService.getCallStats();
+        if (callStatsResponse.success) {
+          setCallStats(callStatsResponse.data);
+        }
+
+        // Fetch recent calls
+        const recentCallsResponse = await callService.getRecentCalls(5);
+        if (recentCallsResponse.success) {
+          setRecentCalls(recentCallsResponse.data.calls);
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   const stats = [
-    { label: "Total Users", value: "1,234", change: "+12%", icon: "👥", color: "primary" },
-    { label: "Active Bookings", value: "89", change: "+5%", icon: "📅", color: "secondary" },
-    { label: "Calls Today", value: "23", change: "+15%", icon: "📞", color: "accent" },
+    { label: "Total Users", value: userCount.toLocaleString(), change: "+12%", icon: "👥", color: "primary" },
+    { label: "Total Calls", value: callStats.total.toLocaleString(), change: "+5%", icon: "📞", color: "secondary" },
+    { label: "Calls Today", value: callStats.today.toLocaleString(), change: "+15%", icon: "📅", color: "accent" },
   ];
+
+  // Prepare data for pie chart
+  const pieData = [
+    { name: 'Successful Calls', value: callStats.success, color: '#10B981' },
+    { name: 'Failed Calls', value: callStats.failed, color: '#EF4444' },
+    { name: 'Pending Calls', value: callStats.total - callStats.success - callStats.failed, color: '#F59E0B' }
+  ].filter(item => item.value > 0);
 
   const getColorClasses = (color: string) => {
     switch (color) {
@@ -14,6 +63,20 @@ const DashboardPage = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div>
+          <h1 className="text-4xl font-bold text-gradient mb-2">Dashboard</h1>
+          <p className="text-gray-600 text-lg">Welcome to your TableBook.Me admin panel</p>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
@@ -21,7 +84,7 @@ const DashboardPage = () => {
         <p className="text-gray-600 text-lg">Welcome to your TableBook.Me admin panel</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
           <div key={stat.label} className="card card-hover p-6" style={{animationDelay: `${index * 0.1}s`}}>
             <div className="flex items-center">
@@ -44,56 +107,84 @@ const DashboardPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="card p-6">
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <span className="mr-3">📊</span>
-            Recent Bookings
+            <span className="mr-3">📞</span>
+            Recent Calls
           </h3>
           <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-                <div>
-                  <p className="font-semibold text-gray-900">Booking #{1000 + i}</p>
-                  <p className="text-sm text-gray-600">Pizza Palace • 4 guests</p>
+            {recentCalls.length > 0 ? (
+              recentCalls.map((call) => (
+                <div key={call._id} className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+                  <div>
+                    <p className="font-semibold text-gray-900">
+                      {call.booking_id?.customer_name || 'Unknown Customer'}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {call.booking_id?.customer_phone || 'No phone'} • {call.duration_sec}s
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
+                      call.status === 'success' 
+                        ? 'bg-green-100 text-green-800'
+                        : call.status === 'failed'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {call.status}
+                    </span>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {new Date(call.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                    Confirmed
-                  </span>
-                  <p className="text-xs text-gray-500 mt-1">2 hours ago</p>
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p>No recent calls found</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
         <div className="card p-6">
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <span className="mr-3">⚡</span>
-            Quick Actions
+            <span className="mr-3">📊</span>
+            Call Statistics
           </h3>
-          <div className="space-y-4">
-            <button className="w-full btn-secondary text-left flex items-center">
-              <span className="mr-3">📞</span>
-              Call Queue Status
-            </button>
-            <button className="w-full btn-accent text-left flex items-center">
-              <span className="mr-3">📋</span>
-              View All Bookings
-            </button>
+          <div className="h-64">
+            {pieData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                <div className="text-center">
+                  <div className="text-4xl mb-4">📊</div>
+                  <p>No call data available</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Chart Section */}
-      <div className="card p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-6">Booking Trends</h3>
-        <div className="h-64 bg-gradient-to-br from-primary-50 to-secondary-50 rounded-xl flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-4xl mb-4">📈</div>
-            <p className="text-gray-600">Chart visualization would go here</p>
-            <p className="text-sm text-gray-500">Showing booking trends over the last 30 days</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
