@@ -49,7 +49,7 @@ restaurants(id, name, address, contact_info, country_code, dial_prefix, retell_a
 bookings(id, restaurant_id, booking_ref, guest_name, phone_raw, phone_e164, booking_datetime, party_size, notes, status)
 calls(id, booking_id, started_at, ended_at, duration_sec, recording_url, status)
 call_outcomes(id, call_id, outcome, reason, new_time, new_party_size, notes_delta, created_at)
-users(id, email, name, role, restaurant_ids)
+users(id, email, name, role)
 ```
 
 ### Technology Stack
