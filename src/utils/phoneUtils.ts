@@ -1,10 +1,9 @@
-import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
+import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';
 import type { PhoneValidationResult } from '../types';
 
 export const normalizePhoneNumber = (
   phoneRaw: string, 
-  dialPrefix: string, 
-  countryCode: string = 'GB'
+  dialPrefix: string
 ): PhoneValidationResult => {
   try {
     // Clean the raw phone number
@@ -29,7 +28,14 @@ export const normalizePhoneNumber = (
     }
     
     // Parse and format to E.164
-    const phoneNumber = parsePhoneNumber(cleanedPhone);
+    const phoneNumber = parsePhoneNumberFromString(cleanedPhone);
+    if (!phoneNumber) {
+      return {
+        isValid: false,
+        phone_e164: null,
+        error: 'Failed to parse phone number'
+      };
+    }
     const e164 = phoneNumber.format('E.164');
     
     return {
@@ -47,7 +53,10 @@ export const normalizePhoneNumber = (
 
 export const formatPhoneForDisplay = (phoneE164: string): string => {
   try {
-    const phoneNumber = parsePhoneNumber(phoneE164);
+    const phoneNumber = parsePhoneNumberFromString(phoneE164);
+    if (!phoneNumber) {
+      return phoneE164;
+    }
     return phoneNumber.formatNational();
   } catch {
     return phoneE164;
@@ -56,11 +65,10 @@ export const formatPhoneForDisplay = (phoneE164: string): string => {
 
 export const validateCSVPhoneNumbers = (
   csvData: Array<{ phone_raw: string; [key: string]: any }>,
-  dialPrefix: string,
-  countryCode: string = 'GB'
+  dialPrefix: string
 ): Array<{ data: any; validation: PhoneValidationResult }> => {
   return csvData.map(row => ({
     data: row,
-    validation: normalizePhoneNumber(row.phone_raw, dialPrefix, countryCode)
+    validation: normalizePhoneNumber(row.phone_raw, dialPrefix)
   }));
 };
