@@ -1,5 +1,5 @@
 import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
-import { PhoneValidationResult } from '../types';
+import type { PhoneValidationResult } from '../types';
 
 export const normalizePhoneNumber = (
   phoneRaw: string, 
