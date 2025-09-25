@@ -2,9 +2,19 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
+export interface Booking {
+  _id: string;
+  guest_firstname: string;
+  guest_surname?: string;
+  phone_number: string;
+  party_size: number;
+  booking_date: string;
+  booking_time: string;
+}
+
 export interface Call {
   _id: string;
-  booking_id: string;
+  booking_id: Booking | string;
   retell_call_id: string;
   started_at: string;
   ended_at: string;
@@ -16,8 +26,8 @@ export interface Call {
   new_party_size: number | null;
   confirmation_call_notes: string;
   status: 'idle' | 'pending' | 'calling' | 'call_start' | 'call_end' | 'success' | 'failed';
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface CallStats {
@@ -116,4 +126,3 @@ class CallService {
 }
 
 export default new CallService();
-export type { Call, CallStats, CallResponse, CallStatsResponse };

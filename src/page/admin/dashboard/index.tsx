@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import userService from '../../../services/userService';
-import callService, { type Call, type CallStats } from '../../../services/callService';
+import callService, { type Call } from '../../../services/callService';
+
+interface CallStats {
+  total: number;
+  success: number;
+  failed: number;
+  today: number;
+}
 
 const DashboardPage = () => {
   const [userCount, setUserCount] = useState(0);
@@ -112,32 +119,47 @@ const DashboardPage = () => {
           </h3>
           <div className="space-y-4">
             {recentCalls.length > 0 ? (
-              recentCalls.map((call) => (
-                <div key={call._id} className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-                  <div>
-                    <p className="font-semibold text-gray-900">
-                      {call.booking_id?.customer_name || 'Unknown Customer'}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {call.booking_id?.customer_phone || 'No phone'} • {call.duration_sec}s
-                    </p>
+              recentCalls.map((call) => {
+                // Handle booking data - it could be populated or just an ID
+                const booking = typeof call.booking_id === 'object' ? call.booking_id : null;
+                const customerName = booking 
+                  ? `${booking.guest_firstname} ${booking.guest_surname || ''}`.trim()
+                  : 'Unknown Customer';
+                const phoneNumber = booking?.phone_number || 'No phone';
+                
+                return (
+                  <div key={call._id} className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        {customerName}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {phoneNumber} • {call.duration_sec}s
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
+                        call.status === 'success' 
+                          ? 'bg-green-100 text-green-800'
+                          : call.status === 'failed'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {call.status}
+                      </span>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(call.createdAt).toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                      call.status === 'success' 
-                        ? 'bg-green-100 text-green-800'
-                        : call.status === 'failed'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {call.status}
-                    </span>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {new Date(call.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <p>No recent calls found</p>
@@ -160,7 +182,7 @@ const DashboardPage = () => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={(entry: any) => `${entry.name} ${(entry.percent * 100).toFixed(0)}%`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
