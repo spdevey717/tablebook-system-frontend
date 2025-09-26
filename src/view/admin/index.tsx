@@ -9,6 +9,7 @@ import {
   SettingsPage,
   ProfilePage
 } from "../../page/admin";
+import FileBookingsPage from "../../page/admin/bookings/[fileId]";
 
 const AdminView = () => {
   return (
@@ -25,6 +26,7 @@ const AdminView = () => {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="bookings" element={<BookingsPage />} />
+        <Route path="bookings/:fileId" element={<FileBookingsPage />} />
         <Route path="phone-upload" element={<PhoneUploadPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="settings" element={<SettingsPage />} />

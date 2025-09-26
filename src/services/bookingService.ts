@@ -67,6 +67,29 @@ class BookingService {
     }
   }
 
+  async getBookingsByCSVFile(csvFileId: string): Promise<BookingResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/booking/csv-file/${csvFileId}`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching bookings by CSV file:', error);
+      return {
+        success: false,
+        data: { bookings: [], count: 0 },
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+      };
+    }
+  }
+
   async clearAllData(): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
       const response = await fetch(`${this.baseUrl}/booking/clear`, {
