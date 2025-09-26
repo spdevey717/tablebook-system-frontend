@@ -3,6 +3,7 @@ interface CSVFile {
   user_id?: string;
   google_drive_file_id?: string;
   google_drive_file_name?: string;
+  original_file_name?: string;
   google_drive_file_url?: string;
   createdAt: string;
   updatedAt: string;

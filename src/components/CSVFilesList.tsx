@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Calendar, Users, ExternalLink, Eye, Download, Globe, Share } from 'lucide-react';
+import { FileText, Calendar, Users, ExternalLink, Eye } from 'lucide-react';
 import csvFileService, { type CSVFile } from '../services/csvFileService';
 
 const CSVFilesList = () => {
@@ -41,28 +41,6 @@ const CSVFilesList = () => {
     window.open(url, '_blank');
   };
 
-  const handleMakePublic = async (fileId: string) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/api/phone-upload/make-public/${fileId}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        alert('File made public successfully! Anyone with the link can now view it.');
-        fetchCSVFiles(); // Refresh the list
-      } else {
-        const errorData = await response.json();
-        alert('Error making file public: ' + (errorData.error || 'Unknown error'));
-      }
-    } catch (err) {
-      alert('Error making file public: ' + (err instanceof Error ? err.message : 'Unknown error'));
-    }
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -75,6 +53,7 @@ const CSVFilesList = () => {
 
   // Filter files based on search term
   const filteredFiles = csvFiles.filter(file => 
+    file.original_file_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     file.google_drive_file_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     file._id.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -169,10 +148,15 @@ const CSVFilesList = () => {
                         <FileText className="w-5 h-5 text-gray-400 mr-3" />
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {file.google_drive_file_name || 'Unknown File'}
+                            {file.original_file_name || file.google_drive_file_name || 'Unknown File'}
                           </div>
                           <div className="text-sm text-gray-500">
                             ID: {file._id.slice(-8)}
+                            {file.google_drive_file_name && file.original_file_name && file.google_drive_file_name !== file.original_file_name && (
+                              <span className="ml-2 text-xs text-blue-600">
+                                (Stored as: {file.google_drive_file_name})
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -215,16 +199,6 @@ const CSVFilesList = () => {
                           <Eye className="w-4 h-4 mr-1" />
                           <span>View Bookings</span>
                         </button>
-                        {file.google_drive_file_id && (
-                          <button
-                            onClick={() => handleMakePublic(file.google_drive_file_id)}
-                            className="flex items-center text-green-600 hover:text-green-900 transition-colors"
-                            title="Make file publicly accessible to anyone"
-                          >
-                            <Share className="w-4 h-4 mr-1" />
-                            <span>Make Public</span>
-                          </button>
-                        )}
                       </div>
                     </td>
                   </tr>
