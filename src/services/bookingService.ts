@@ -29,6 +29,21 @@ interface BookingResponse {
   error?: string;
 }
 
+interface CSVFileBookingResponse {
+  success: boolean;
+  data: {
+    bookings: Booking[];
+    count: number;
+    csv_file: {
+      id: string;
+      google_drive_file_name: string;
+      google_drive_file_url: string;
+      created_at: string;
+    };
+  };
+  error?: string;
+}
+
 class BookingService {
   private baseUrl: string;
 
@@ -67,7 +82,7 @@ class BookingService {
     }
   }
 
-  async getBookingsByCSVFile(csvFileId: string): Promise<BookingResponse> {
+  async getBookingsByCSVFile(csvFileId: string): Promise<CSVFileBookingResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/booking/csv-file/${csvFileId}`, {
         method: 'GET',
@@ -84,7 +99,16 @@ class BookingService {
       console.error('Error fetching bookings by CSV file:', error);
       return {
         success: false,
-        data: { bookings: [], count: 0 },
+        data: { 
+          bookings: [], 
+          count: 0,
+          csv_file: {
+            id: '',
+            google_drive_file_name: '',
+            google_drive_file_url: '',
+            created_at: ''
+          }
+        },
         error: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
@@ -156,4 +180,4 @@ class BookingService {
 }
 
 export default new BookingService();
-export type { Booking, BookingResponse };
+export type { Booking, BookingResponse, CSVFileBookingResponse };
