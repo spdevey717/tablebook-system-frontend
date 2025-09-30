@@ -188,13 +188,6 @@ const CSVFileBookings = ({ csvFileId }: CSVFileBookingsProps) => {
     setSelectedRows(newSelection);
   };
 
-  const clearCurrentPageSelections = () => {
-    const currentPageIds = currentData.map(booking => booking._id);
-    const newSelection = new Set(selectedRows);
-    currentPageIds.forEach(id => newSelection.delete(id));
-    setSelectedRows(newSelection);
-  };
-
   // Pagination handlers
   const goToPage = (page: number) => {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
