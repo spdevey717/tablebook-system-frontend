@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, Trash2, RefreshCw, Phone, Calendar, Users, FileText } from 'lucide-react';
-import bookingService, { type Booking, type CSVFileBookingResponse } from '../services/bookingService';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Download, RefreshCw, Phone, Calendar, Users, FileText } from 'lucide-react';
+import bookingService, { type Booking } from '../services/bookingService';
 
 interface CSVFileBookingsProps {
   csvFileId: string;
