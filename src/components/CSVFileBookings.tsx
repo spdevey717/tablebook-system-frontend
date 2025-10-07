@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, RefreshCw, Phone, Calendar, Users, FileText, Settings } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import bookingService, { type Booking } from '../services/bookingService';
 import { retellAgentService, type RetellAgent } from '../services/retellAgentService';
 
@@ -85,15 +86,19 @@ const CSVFileBookings = ({ csvFileId }: CSVFileBookingsProps) => {
       if (response.success) {
         setCsvFileInfo(response.data?.csv_file);
         setShowAgentSelector(false);
-        alert('RetellAgent assigned successfully!');
+        if (selectedAgentId) {
+          toast.success('RetellAgent assigned successfully!');
+        } else {
+          toast.success('RetellAgent assignment removed successfully!');
+        }
       } else {
         setError(response.error || 'Failed to assign RetellAgent');
-        alert('Error: ' + (response.error || 'Failed to assign RetellAgent'));
+        toast.error('Error: ' + (response.error || 'Failed to assign RetellAgent'));
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError('Network error: ' + errorMessage);
-      alert('Error assigning RetellAgent: ' + errorMessage);
+      toast.error('Error assigning RetellAgent: ' + errorMessage);
       console.error('Error assigning RetellAgent:', err);
     } finally {
       setIsAssigningAgent(false);
@@ -102,11 +107,17 @@ const CSVFileBookings = ({ csvFileId }: CSVFileBookingsProps) => {
 
   const handleCheckBookings = async () => {
     if (selectedRows.size === 0) {
-      alert('Please select at least one booking to check.');
+      toast.error('Please select at least one booking to check.');
       return;
     }
 
-    if (!confirm(`Are you sure you want to make outbound calls to ${selectedRows.size} selected booking(s)? This will initiate phone calls to verify the bookings.`)) {
+    // Check if a RetellAgent is assigned to this CSV file
+    if (!csvFileInfo?.retell_agent_id) {
+      toast.error('Please assign a Retell Agent before checking bookings. Click "Assign Agent" to select an agent.');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to make outbound calls to ${selectedRows.size} selected booking(s)? This will initiate phone calls to verify the bookings using agent: ${(csvFileInfo as any).retell_agent_id.name}.`)) {
       return;
     }
 
@@ -129,15 +140,15 @@ const CSVFileBookings = ({ csvFileId }: CSVFileBookingsProps) => {
         
         // Show success message
         const { summary } = response.data!;
-        alert(`Check bookings completed!\n\nTotal: ${summary.total}\nSuccessful: ${summary.successful}\nFailed: ${summary.failed}`);
+        toast.success(`Check bookings completed! Total: ${summary.total}, Successful: ${summary.successful}, Failed: ${summary.failed}`);
       } else {
         setError(response.error || 'Failed to check bookings');
-        alert('Error checking bookings: ' + (response.error || 'Unknown error'));
+        toast.error('Error checking bookings: ' + (response.error || 'Unknown error'));
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError('Network error: ' + errorMessage);
-      alert('Error checking bookings: ' + errorMessage);
+      toast.error('Error checking bookings: ' + errorMessage);
       console.error('Error checking bookings:', err);
     } finally {
       setIsCheckingBookings(false);
@@ -292,6 +303,13 @@ const CSVFileBookings = ({ csvFileId }: CSVFileBookingsProps) => {
                 </span>
               )}
             </p>
+            {!csvFileInfo?.retell_agent_id && (
+              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                <p className="text-yellow-800 text-sm">
+                  ⚠️ Please assign a Retell Agent to check bookings. Click "Assign Agent" to select an agent.
+                </p>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex space-x-3">
@@ -316,13 +334,19 @@ const CSVFileBookings = ({ csvFileId }: CSVFileBookingsProps) => {
           </button>
           <button
             onClick={handleCheckBookings}
-            disabled={selectedRows.size === 0 || isCheckingBookings}
+            disabled={selectedRows.size === 0 || isCheckingBookings || !csvFileInfo?.retell_agent_id}
             className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            title={!csvFileInfo?.retell_agent_id ? "Please assign a Retell Agent first" : ""}
           >
             {isCheckingBookings ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                 <span>Checking...</span>
+              </>
+            ) : !csvFileInfo?.retell_agent_id ? (
+              <>
+                <Phone className="w-4 h-4" />
+                <span>Assign Agent First</span>
               </>
             ) : (
               <>
