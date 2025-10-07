@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, RefreshCw, Phone, Calendar, Users, FileText } from 'lucide-react';
+import { ArrowLeft, Download, RefreshCw, Phone, Calendar, Users, FileText, Settings } from 'lucide-react';
 import bookingService, { type Booking } from '../services/bookingService';
+import { retellAgentService, type RetellAgent } from '../services/retellAgentService';
 
 interface CSVFileBookingsProps {
   csvFileId: string;
@@ -26,9 +27,16 @@ const CSVFileBookings = ({ csvFileId }: CSVFileBookingsProps) => {
   // Check bookings state
   const [isCheckingBookings, setIsCheckingBookings] = useState(false);
   const [checkResults, setCheckResults] = useState<any>(null);
+  
+  // RetellAgent state
+  const [retellAgents, setRetellAgents] = useState<RetellAgent[]>([]);
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [isAssigningAgent, setIsAssigningAgent] = useState(false);
+  const [showAgentSelector, setShowAgentSelector] = useState(false);
 
   useEffect(() => {
     fetchBookings();
+    fetchRetellAgents();
   }, [csvFileId]);
 
   // Reset pagination when filters change
@@ -45,6 +53,8 @@ const CSVFileBookings = ({ csvFileId }: CSVFileBookingsProps) => {
       if (response.success) {
         setBookings(response.data.bookings);
         setCsvFileInfo(response.data.csv_file);
+        // Set the current agent if file has one assigned
+        setSelectedAgentId((response.data.csv_file as any)?.retell_agent_id?._id || null);
       } else {
         setError(response.error || 'Failed to fetch bookings');
       }
@@ -53,6 +63,40 @@ const CSVFileBookings = ({ csvFileId }: CSVFileBookingsProps) => {
       console.error('Error fetching bookings:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRetellAgents = async () => {
+    try {
+      const response = await retellAgentService.getRetellAgents();
+      if (response.success) {
+        setRetellAgents(response.data.retellAgents);
+      }
+    } catch (err) {
+      console.error('Error fetching RetellAgents:', err);
+    }
+  };
+
+  const handleAssignAgent = async () => {
+    try {
+      setIsAssigningAgent(true);
+      const response = await bookingService.assignRetellAgent(csvFileId, selectedAgentId);
+      
+      if (response.success) {
+        setCsvFileInfo(response.data?.csv_file);
+        setShowAgentSelector(false);
+        alert('RetellAgent assigned successfully!');
+      } else {
+        setError(response.error || 'Failed to assign RetellAgent');
+        alert('Error: ' + (response.error || 'Failed to assign RetellAgent'));
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError('Network error: ' + errorMessage);
+      alert('Error assigning RetellAgent: ' + errorMessage);
+      console.error('Error assigning RetellAgent:', err);
+    } finally {
+      setIsAssigningAgent(false);
     }
   };
 
@@ -251,6 +295,18 @@ const CSVFileBookings = ({ csvFileId }: CSVFileBookingsProps) => {
           </div>
         </div>
         <div className="flex space-x-3">
+          <button
+            onClick={() => setShowAgentSelector(true)}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          >
+            <Settings className="w-4 h-4" />
+            <span>
+              {(csvFileInfo as any)?.retell_agent_id?.name ? 
+                `Agent: ${(csvFileInfo as any).retell_agent_id.name}` : 
+                'Assign Agent'
+              }
+            </span>
+          </button>
           <button
             onClick={fetchBookings}
             className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors"
@@ -657,6 +713,54 @@ const CSVFileBookings = ({ csvFileId }: CSVFileBookingsProps) => {
                   className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Agent Selection Modal */}
+        {showAgentSelector && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+              <h2 className="text-xl font-semibold mb-4">Assign Retell Agent</h2>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Retell Agent
+                </label>
+                <select
+                  value={selectedAgentId || ''}
+                  onChange={(e) => setSelectedAgentId(e.target.value || null)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">No Agent (Remove Assignment)</option>
+                  {retellAgents
+                    .filter(agent => agent.isActive)
+                    .map((agent) => (
+                      <option key={agent._id} value={agent._id}>
+                        {agent.name} - {agent.phoneNumber}
+                      </option>
+                    ))}
+                </select>
+                {retellAgents.filter(agent => agent.isActive).length === 0 && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    No active RetellAgents found. Please create one in the Retell Agents page.
+                  </p>
+                )}
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowAgentSelector(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAssignAgent}
+                  disabled={isAssigningAgent}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  {isAssigningAgent ? 'Assigning...' : 'Assign Agent'}
                 </button>
               </div>
             </div>
