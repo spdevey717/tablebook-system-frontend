@@ -102,11 +102,12 @@ const CSVFileBookings = ({ csvFileId }: CSVFileBookingsProps) => {
 
   const exportData = () => {
     const csvContent = [
-      ['Booking Ref', 'Phone Number', 'Guest Name', 'Booking Date', 'Booking Time', 'Party Size', 'Status', 'Outcome', 'Notes', 'Confirmation Notes', 'Recording URL', 'Call Duration'],
+      ['ref_number', 'phone number', 'guest_firstname', 'guest_surname', 'booking_date', 'booking_time', 'party_size', 'status', 'outcome', 'notes', 'confirmation_notes', 'recording_url', 'call_duration_sec'],
       ...filteredBookings.map(booking => [
         booking.booking_ref,
         booking.phone_number,
-        `${booking.guest_firstname} ${booking.guest_surname}`,
+        booking.guest_firstname,
+        booking.guest_surname,
         booking.booking_date,
         booking.booking_time,
         booking.party_size,
