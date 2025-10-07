@@ -48,7 +48,7 @@ class BookingService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    this.baseUrl = import.meta.env.VITE_BACKEND_URL;
   }
 
   private getAuthHeaders(): HeadersInit {
