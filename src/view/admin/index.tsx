@@ -6,6 +6,7 @@ import {
   UsersPage,
   BookingsPage,
   PhoneUploadPage,
+  RetellAgentsPage,
   SettingsPage,
   ProfilePage
 } from "../../page/admin";
@@ -28,6 +29,7 @@ const AdminView = () => {
         <Route path="bookings" element={<BookingsPage />} />
         <Route path="bookings/:fileId" element={<FileBookingsPage />} />
         <Route path="phone-upload" element={<PhoneUploadPage />} />
+        <Route path="retell-agents" element={<RetellAgentsPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
