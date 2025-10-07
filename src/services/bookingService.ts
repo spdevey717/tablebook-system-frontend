@@ -177,6 +177,36 @@ class BookingService {
       };
     }
   }
+
+  // Assign RetellAgent to CSVFile
+  async assignRetellAgent(fileId: string, retellAgentId: string | null): Promise<{
+    success: boolean;
+    data?: {
+      csv_file: any;
+    };
+    error?: string;
+  }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/phone-upload/assign-agent/${fileId}`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ retell_agent_id: retellAgentId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error assigning RetellAgent:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+      };
+    }
+  }
 }
 
 export default new BookingService();

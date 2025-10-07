@@ -8,6 +8,7 @@ const AdminSidebar = () => {
     { path: "/admin/users", label: "Users", icon: "👥" },
     { path: "/admin/bookings", label: "Bookings", icon: "📅" },
     { path: "/admin/phone-upload", label: "Phone Upload", icon: "📱" },
+    { path: "/admin/retell-agents", label: "Retell Agents", icon: "📞" },
     { path: "/admin/settings", label: "Settings", icon: "⚙️" },
   ];
 
